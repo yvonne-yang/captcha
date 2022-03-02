@@ -1,4 +1,23 @@
-Captcha
+To Run My Script:  
+========  
+
+``python gen_char_images.py``
+This will generate images in the following folder structure::  
+   chars/  
+   ├─ 0/  
+   │  ├─ 0-1.png  
+   ├─ 1/  
+   │  ├─ 1-1.png  
+   │  ├─ 1-2.png  
+   ├─ .../  
+   ├─ a/  
+   │  ├─ a-1.png  
+   │  ├─ a-2.png  
+   ├─ .../  
+
+=======
+
+Captcha library README:
 =======
 
 A captcha library that generates audio and image CAPTCHAs.
