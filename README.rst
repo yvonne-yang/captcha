@@ -1,10 +1,12 @@
 To Run My Script:  
 ========  
 
-``python gen_char_images.py 1000``
-``python gen_char_images.py 100 --width=20 --height=75 --dst="trial"``
+``python gen_char_images.py 1000``  
 
-This will generate images in the following folder structure::  
+``python gen_char_images.py 100 --width=20 --height=75 --dst="trial"``  
+
+The script will generate images in the following folder structure::  
+
    chars/  
    ├─ 0/  
    │  ├─ 0-1.png  
