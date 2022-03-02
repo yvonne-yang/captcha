@@ -231,6 +231,75 @@ class ImageCaptcha(_Captcha):
         im = im.filter(ImageFilter.SMOOTH)
         return im
 
+    def generate_char_image(self, chars, dst="chars"):
+        """
+        Generates images of individual characters as if they were
+        created by this same generator.
+        """
+        background = random_color(238, 255)
+        color = random_color(10, 200, random.randint(220, 255))
+        image = Image.new('RGB', (self._width, self._height), background)
+        draw = Draw(image)
+
+        def _draw_character(c):
+            font = random.choice(self.truefonts)
+            w, h = draw.textsize(c, font=font)
+
+            dx = random.randint(0, 4)
+            dy = random.randint(0, 6)
+            im = Image.new('RGBA', (w + dx, h + dy))
+            Draw(im).text((dx, dy), c, font=font, fill=color)
+
+            # rotate
+            im = im.crop(im.getbbox())
+            im = im.rotate(random.uniform(-30, 30), Image.BILINEAR, expand=1)
+
+            # warp
+            dx = w * random.uniform(0.1, 0.3)
+            dy = h * random.uniform(0.2, 0.3)
+            x1 = int(random.uniform(-dx, dx))
+            y1 = int(random.uniform(-dy, dy))
+            x2 = int(random.uniform(-dx, dx))
+            y2 = int(random.uniform(-dy, dy))
+            w2 = w + abs(x1) + abs(x2)
+            h2 = h + abs(y1) + abs(y2)
+            data = (
+                x1, y1,
+                -x1, h2 - y2,
+                w2 + x2, h2 + y2,
+                w2 - x2, -y1,
+            )
+            im = im.resize((w2, h2))
+            im = im.transform((w, h), Image.QUAD, data)
+            return im
+
+        images = []
+        for c in chars:
+            images.append(_draw_character(c))
+
+        text_width = sum([im.size[0] for im in images])
+
+        width = max(text_width, self._width)
+        image = image.resize((width, self._height))
+
+        # generate images of individual chars
+        char_images = []
+        clean_bg = image.copy()
+        for i, im in enumerate(images):
+            w, h = im.size
+            mask = im.convert('L').point(table)
+            image.paste(im, (0, int((self._height - h) / 2)), mask)
+            color = random_color(10, 200, random.randint(220, 255))
+            self.create_noise_dots(image, color)
+            self.create_noise_curve(image, color)
+            image = image.crop((0, 0, w, h))
+            c = chars[i]
+            count = len(os.listdir(f"{dst}/{c}")) + 1
+            image.save(f"{dst}/{c}/{c}-{count}.png")
+            char_images.append(image)
+            image = clean_bg.copy()
+
+        return char_images
 
 def random_color(start, end, opacity=None):
     red = random.randint(start, end)
