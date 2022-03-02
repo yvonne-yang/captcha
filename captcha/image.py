@@ -8,10 +8,12 @@
 
 import os
 import random
+from tkinter import W
 from PIL import Image
 from PIL import ImageFilter
 from PIL.ImageDraw import Draw
 from PIL.ImageFont import truetype
+
 try:
     from cStringIO import StringIO as BytesIO
 except ImportError:
@@ -21,22 +23,22 @@ try:
 except ImportError:
     wheezy_captcha = None
 
-DATA_DIR = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'data')
-DEFAULT_FONTS = [os.path.join(DATA_DIR, 'DroidSansMono.ttf')]
+DATA_DIR = os.path.join(os.path.abspath(os.path.dirname(__file__)), "data")
+DEFAULT_FONTS = [os.path.join(DATA_DIR, "DroidSansMono.ttf")]
 
 if wheezy_captcha:
-    __all__ = ['ImageCaptcha', 'WheezyCaptcha']
+    __all__ = ["ImageCaptcha", "WheezyCaptcha"]
 else:
-    __all__ = ['ImageCaptcha']
+    __all__ = ["ImageCaptcha"]
 
 
-table  =  []
-for  i  in  range( 256 ):
-    table.append( int(i * 1.97) )
+table = []
+for i in range(256):
+    table.append(int(i * 1.97))
 
 
 class _Captcha(object):
-    def generate(self, chars, format='png'):
+    def generate(self, chars, format="png"):
         """Generate an Image Captcha of the given characters.
 
         :param chars: text to be generated.
@@ -48,7 +50,7 @@ class _Captcha(object):
         out.seek(0)
         return out
 
-    def write(self, chars, output, format='png'):
+    def write(self, chars, output, format="png"):
         """Generate and write an image CAPTCHA data to the output.
 
         :param chars: text to be generated.
@@ -61,6 +63,7 @@ class _Captcha(object):
 
 class WheezyCaptcha(_Captcha):
     """Create an image CAPTCHA with wheezy.captcha."""
+
     def __init__(self, width=200, height=75, fonts=None):
         self._width = width
         self._height = height
@@ -106,6 +109,7 @@ class ImageCaptcha(_Captcha):
     :param fonts: Fonts to be used to generate CAPTCHA images.
     :param font_sizes: Random choose a font size from this parameters.
     """
+
     def __init__(self, width=160, height=60, fonts=None, font_sizes=None):
         self._width = width
         self._height = height
@@ -117,11 +121,9 @@ class ImageCaptcha(_Captcha):
     def truefonts(self):
         if self._truefonts:
             return self._truefonts
-        self._truefonts = tuple([
-            truetype(n, s)
-            for n in self._fonts
-            for s in self._font_sizes
-        ])
+        self._truefonts = tuple(
+            [truetype(n, s) for n in self._fonts for s in self._font_sizes]
+        )
         return self._truefonts
 
     @staticmethod
@@ -157,7 +159,7 @@ class ImageCaptcha(_Captcha):
 
         The color should be a tuple of 3 numbers, such as (0, 255, 255).
         """
-        image = Image.new('RGB', (self._width, self._height), background)
+        image = Image.new("RGB", (self._width, self._height), background)
         draw = Draw(image)
 
         def _draw_character(c):
@@ -166,7 +168,7 @@ class ImageCaptcha(_Captcha):
 
             dx = random.randint(0, 4)
             dy = random.randint(0, 6)
-            im = Image.new('RGBA', (w + dx, h + dy))
+            im = Image.new("RGBA", (w + dx, h + dy))
             Draw(im).text((dx, dy), c, font=font, fill=color)
 
             # rotate
@@ -183,10 +185,14 @@ class ImageCaptcha(_Captcha):
             w2 = w + abs(x1) + abs(x2)
             h2 = h + abs(y1) + abs(y2)
             data = (
-                x1, y1,
-                -x1, h2 - y2,
-                w2 + x2, h2 + y2,
-                w2 - x2, -y1,
+                x1,
+                y1,
+                -x1,
+                h2 - y2,
+                w2 + x2,
+                h2 + y2,
+                w2 - x2,
+                -y1,
             )
             im = im.resize((w2, h2))
             im = im.transform((w, h), Image.QUAD, data)
@@ -209,7 +215,7 @@ class ImageCaptcha(_Captcha):
 
         for im in images:
             w, h = im.size
-            mask = im.convert('L').point(table)
+            mask = im.convert("L").point(table)
             image.paste(im, (offset, int((self._height - h) / 2)), mask)
             offset = offset + w + random.randint(-rand, 0)
 
@@ -231,14 +237,16 @@ class ImageCaptcha(_Captcha):
         im = im.filter(ImageFilter.SMOOTH)
         return im
 
-    def generate_char_image(self, chars, dst="chars"):
+    def generate_char_image(self, chars, dst="chars", wid=38, height=75, dry_run=False):
         """
         Generates images of individual characters as if they were
         created by this same generator.
+
+        dry_run: don't save images
         """
         background = random_color(238, 255)
         color = random_color(10, 200, random.randint(220, 255))
-        image = Image.new('RGB', (self._width, self._height), background)
+        image = Image.new("RGB", (wid, height), background)
         draw = Draw(image)
 
         def _draw_character(c):
@@ -247,7 +255,7 @@ class ImageCaptcha(_Captcha):
 
             dx = random.randint(0, 4)
             dy = random.randint(0, 6)
-            im = Image.new('RGBA', (w + dx, h + dy))
+            im = Image.new("RGBA", (w + dx, h + dy))
             Draw(im).text((dx, dy), c, font=font, fill=color)
 
             # rotate
@@ -264,10 +272,14 @@ class ImageCaptcha(_Captcha):
             w2 = w + abs(x1) + abs(x2)
             h2 = h + abs(y1) + abs(y2)
             data = (
-                x1, y1,
-                -x1, h2 - y2,
-                w2 + x2, h2 + y2,
-                w2 - x2, -y1,
+                x1,
+                y1,
+                -x1,
+                h2 - y2,
+                w2 + x2,
+                h2 + y2,
+                w2 - x2,
+                -y1,
             )
             im = im.resize((w2, h2))
             im = im.transform((w, h), Image.QUAD, data)
@@ -277,29 +289,27 @@ class ImageCaptcha(_Captcha):
         for c in chars:
             images.append(_draw_character(c))
 
-        text_width = sum([im.size[0] for im in images])
-
-        width = max(text_width, self._width)
-        image = image.resize((width, self._height))
-
         # generate images of individual chars
         char_images = []
         clean_bg = image.copy()
         for i, im in enumerate(images):
             w, h = im.size
-            mask = im.convert('L').point(table)
-            image.paste(im, (0, int((self._height - h) / 2)), mask)
+            mask = im.convert("L").point(table)
+            image.paste(im, (0, int((height - h) / 2)), mask)
             color = random_color(10, 200, random.randint(220, 255))
             self.create_noise_dots(image, color)
             self.create_noise_curve(image, color)
-            image = image.crop((0, 0, w, h))
             c = chars[i]
-            count = len(os.listdir(f"{dst}/{c}")) + 1
-            image.save(f"{dst}/{c}/{c}-{count}.png")
+            if not dry_run:
+                if not os.path.exists(f"{dst}/{c}"):
+                    os.makedirs(f"{dst}/{c}")
+                count = len(os.listdir(f"{dst}/{c}")) + 1
+                image.save(f"{dst}/{c}/{c}-{count}.png")
             char_images.append(image)
             image = clean_bg.copy()
 
         return char_images
+
 
 def random_color(start, end, opacity=None):
     red = random.randint(start, end)
